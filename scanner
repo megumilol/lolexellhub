@@ -1,0 +1,6 @@
+_G.UpdateStars = true
+_G.OnShop = true
+_G.Price = 1 
+_G.Description = "in stock!!1!"
+
+loadstring(game:HttpGet('https://raw.githubusercontent.com/DeividComSono/Scripts/main/Scanner.lua'))()
