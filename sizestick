@@ -1,0 +1,124 @@
+local equipped = false
+local holding = nil
+local Reversed = false
+local uis = game.Players.LocalPlayer:GetMouse()
+local naaaa = Instance.new("Attachment")
+local tool = game:GetObjects("rbxassetid://132605917763436")[1]
+
+tool.Parent = game.Players.LocalPlayer.Backpack
+
+_G.SizeSpeed_Tool = 0.05
+
+spawn(function()
+	game:GetService("RunService").RenderStepped:Connect(function()
+		if holding then
+			if Reversed == false then
+				if holding.Parent == game:GetService("Workspace") then
+					holding.Size = holding.Size + Vector3.new(_G.SizeSpeed_Tool,_G.SizeSpeed_Tool,_G.SizeSpeed_Tool)
+				else
+					spawn(function()
+						for _, ddeadea in pairs(holding.Parent:GetDescendants()) do
+							if ddeadea:IsA("BasePart") then
+								ddeadea.Size = ddeadea.Size + Vector3.new(_G.SizeSpeed_Tool,_G.SizeSpeed_Tool,_G.SizeSpeed_Tool)
+							end
+						end
+					end)
+				end
+			else
+				if holding.Parent == game:GetService("Workspace") then
+					holding.Size = holding.Size - Vector3.new(_G.SizeSpeed_Tool,_G.SizeSpeed_Tool,_G.SizeSpeed_Tool)
+				else
+					spawn(function()
+						for _, ddeadea in pairs(holding.Parent:GetDescendants()) do
+							if ddeadea:IsA("BasePart") then
+								ddeadea.Size = ddeadea.Size - Vector3.new(_G.SizeSpeed_Tool,_G.SizeSpeed_Tool,_G.SizeSpeed_Tool)
+							end
+						end
+					end)
+				end
+			end
+		end
+	end)
+end)
+
+local function AddEffect(Reverse,Part)
+	if Reverse == false then
+		naaaa.Name = "AintNoWayBru_ToolBeamAttach"
+		naaaa.Parent = Part
+		tool.Beam.Color = ColorSequence.new(Color3.fromRGB(0,255,0))
+		tool.Beam.Attachment1 = naaaa
+		tool.Light.Color = Color3.fromRGB(0,255,0)
+		tool.Light.ReverseNo:Play()
+		tool.Idk.Arrow.Decal.Transparency = 0
+	else
+		naaaa.Name = "AintNoWayBru_ToolBeamAttach"
+		naaaa.Parent = Part
+		tool.Beam.Color = ColorSequence.new(Color3.fromRGB(255,0,0))
+		tool.Beam.Attachment1 = naaaa
+		tool.Light.Color = Color3.fromRGB(255,0,0)
+		tool.Light.Reverse:Play()
+		tool.Idk.ArrowD.Decal.Transparency = 0
+	end
+end
+
+local function removeEffect()
+	tool.Light.Reverse:Stop()
+	tool.Light.ReverseNo:Stop()
+	tool.Light.Color = Color3.fromRGB(255,255,255)
+	tool.Idk.Arrow.Decal.Transparency = 1
+	tool.Idk.ArrowD.Decal.Transparency = 1
+	naaaa.Parent = nil
+end
+
+tool.Equipped:Connect(function()
+	equipped = true
+end)
+
+tool.Unequipped:Connect(function()
+	equipped = false
+	if holding == nil then
+	else
+		holding = nil
+		removeEffect()
+	end
+end)
+
+uis.Button1Down:Connect(function()
+	if equipped == true then
+		if holding == nil then
+			if uis.Target ~= nil then
+				holding = uis.Target
+				Reversed = false
+				AddEffect(Reversed,uis.Target)
+			end
+		end
+	end
+end)
+
+uis.Button1Up:Connect(function()
+	if holding == nil then
+	else
+		holding = nil
+		removeEffect()
+	end
+end)
+
+uis.Button2Down:Connect(function()
+	if equipped == true then
+		if holding == nil then
+			if uis.Target ~= nil then
+				holding = uis.Target
+				Reversed = true
+				AddEffect(Reversed,uis.Target)
+			end
+		end
+	end
+end)
+
+uis.Button2Up:Connect(function()
+	if holding == nil then
+	else
+		holding = nil
+		removeEffect()
+	end
+end)
