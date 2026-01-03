@@ -6,7 +6,7 @@ _G.CreateItem("exampleTool", {
     Description = "on stock!1!!",
     Desc        = "on stock!1!!",
     Image       = "https://static.wikia.nocookie.net/doors-game/images/4/4e/Scanner_Icon.png/revision/latest/scale-to-width-down/350?cb=20230203191128",
-    Price       = "1",  -- или число
+    Price       = "1", 
     Stack       = true
 })
 
@@ -134,7 +134,6 @@ task.spawn(function()
             local handle = screenUI:WaitForChild("Handle")
             local screen = handle:WaitForChild("Screen")
             
-            -- FOV наведения
             local currentRoom = workspace:GetAttribute("CurrentRoom")
             local room = workspace.CurrentRooms:FindFirstChild(tostring(currentRoom))
             
