@@ -1,0 +1,115 @@
+_G.Uses = _G.Uses or 999
+_G.Range = _G.Range or 50
+_G.Fail = _G.Fail or false
+_G.OnAnything = true
+
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+local CameraShaker = require(ReplicatedStorage:WaitForChild("CameraShaker"))
+
+local player = Players.LocalPlayer
+local mouse = player:GetMouse()
+local camera = workspace.CurrentCamera
+local character = player.Character or player.CharacterAdded:Wait()
+local rootPart = character:WaitForChild("HumanoidRootPart")
+local backpack = player:WaitForChild("Backpack")
+
+local crucifixObjects = game:GetObjects("rbxassetid://12849323184")[1]
+local crucifix = crucifixObjects:FindFirstChild("Repentance", true):FindFirstChild("Crucifix", true)
+crucifix.Parent = backpack
+
+local equippedConn, unequippedConn
+local lastCFrame = rootPart.CFrame
+
+crucifix.Equipped:Connect(function()
+    equippedConn = mouse.Button1Down:Connect(function()
+        if _G.Uses <= 0 then return end
+        _G.Uses -= 1
+
+        local closestEntity, closestDist = nil, _G.Range
+        for _, obj in ipairs(workspace:GetDescendants()) do
+            if obj:IsA("Model") and obj:GetAttribute("IsCustomEntity") then
+                local dist = player:DistanceFromCharacter(obj.PrimaryPart.Position)
+                if dist < closestDist then
+                    closestEntity, closestDist = obj, dist
+                end
+            end
+        end
+
+        if closestEntity and closestEntity:GetAttribute("GoingToHell") ~= true then
+            closestEntity:SetAttribute("GoingToHell", true)
+            
+            CameraShaker:ShakeOnce(3, 1, 0.5, 2)
+            
+            local hellModel = closestEntity.HellModel:Clone()
+            hellModel.Name = "Fake"
+            hellModel.Parent = workspace
+            
+            local rayParams = RaycastParams.new()
+            rayParams.FilterType = Enum.RaycastFilterType.Blacklist
+            rayParams.FilterDescendantsInstances = {character, closestEntity}
+            local rayResult = workspace:Raycast(rootPart.Position, Vector3.new(0, -100, 0), rayParams)
+            local hitPos = rayResult and rayResult.Position or rootPart.Position
+            
+            local pentagram = Instance.new("Part")
+            pentagram.Name = "Pentagram"
+            pentagram.Anchored = true
+            pentagram.Position = Vector3.new(hitPos.X, hitPos.Y - 5, hitPos.Z)
+            pentagram.Parent = workspace
+            pentagram:PivotTo(CFrame.new(hitPos) * CFrame.Angles(math.rad(-90), 0, 0))
+            
+            task.wait(0.5)
+            pentagram:Destroy()
+            
+            local glow = crucifix.Glow
+            local light = glow.Light
+            light.Enabled = true
+            
+            local sizeTween = TweenService:Create(glow, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = glow.Size * 1.5})
+            sizeTween:Play()
+            
+            local transTween = TweenService:Create(glow, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Transparency = 0})
+            transTween:Play()
+            
+            glow.ExplodeParticle:Emit(20)
+            
+            if not _G.Fail then
+                glow.Sound:Play()
+            else
+                glow.SoundFail:Play()
+            end
+            
+            local bodyAngVel = Instance.new("BodyAngularVelocity")
+            bodyAngVel.AngularVelocity = Vector3.new(0, math.huge, 0)
+            bodyAngVel.Parent = closestEntity.PrimaryPart or closestEntity:FindFirstChild("HumanoidRootPart")
+            
+            local bodyPos = Instance.new("BodyPosition")
+            bodyPos.Position = hitPos
+            bodyPos.Parent = closestEntity.PrimaryPart
+            
+            task.spawn(function()
+                task.wait(2)
+                closestEntity:Destroy()
+            end)
+            
+            
+        else
+            _G.Fail = true
+            CameraShaker:ShakeOnce(2, 0.5, 0.2, 1)
+        end
+    end)
+end)
+
+crucifix.Unequipped:Connect(function()
+    if equippedConn then equippedConn:Disconnect() end
+end)
+
+RunService.Stepped:Connect(function()
+    if crucifix.Parent == backpack then
+        rootPart.CFrame = lastCFrame
+    end
+    lastCFrame = rootPart.CFrame
+end)
